@@ -7,6 +7,8 @@ var myConfig = new AWS.Config({
 var Discord = require('discord.io');
 var logger = require('winston');
 var auth = require('./auth.json');
+var fileWriter = require('./filewriter.js'); //not sure if it is necessary.
+
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -24,22 +26,10 @@ bot.on('ready', function (evt) {
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
 });
-//must be changed so that it only activates when there is a change in status, not game being played.
-/*
-bot.on('presence', function (user, userID, status) {
-    if (status == 'online') {
-        var message = "Welcome to the channel, ";
-        var greeting = message.concat(user);
-        bot.sendMessage({
-            to: '351034503969374220', //channel id
-            message: greeting
-        });
-    }
-});
-*/
 
+/*
 bot.on('presence', function (user, userID, status, game) {
-    if (game != null){
+    if (game !== null){
         var message = " is playing ";
         message = user.concat(message);
         message = message.concat(game.name);
@@ -50,11 +40,12 @@ bot.on('presence', function (user, userID, status, game) {
         });
     }
 });
+*/
 
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
-    if (message.substring(0, 1) == '!') {
+    if (message.substring(0, 1) === '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
        
@@ -67,6 +58,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: "I'm not interested in such puny games."
                 });
             break;
+            case 'start':
+                fileWriter.logUser(user, userID); //Doesn't work yet
+
             // Just add any case commands if you want to.
          }
      }
@@ -82,7 +76,7 @@ function isGreeting (message) {
 function greet (channelID) {
     var reply = ''; //empty reply, check if it makes sense
     //var number = Math.random()*10;
-    var number = Math.floor(Math.random() * (10 - 0 + 1)) + 0; //min 0 max 10
+    var number = Math.floor(Math.random() * (11)); //max - min +1)) + min
     switch (number){ //10 different options.
         case 0:
         reply = "Hello fellow human.";
@@ -125,7 +119,7 @@ function containsName (message) {
     messageLower = message.toLowerCase();
     argsName = messageLower.split(" ");
     for (i=0; i<argsName.length; i++) {
-        if (argsName[i] == 'mars-bot') {
+        if (argsName[i] === 'mars-bot') {
             return true;
         }
     }
